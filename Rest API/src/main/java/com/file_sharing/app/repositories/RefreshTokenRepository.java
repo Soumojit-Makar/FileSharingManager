@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Integer> {
+<<<<<<< HEAD
 
     /**
      * Finds a refresh token by its held value.
@@ -32,5 +33,9 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Inte
      * @param timestamp the timestamp to compare against the expiry dates
      * @return a list of expired RefreshTokens
      */
+=======
+    Optional<RefreshToken> findByRefreshTokenHold(String refreshTokenHold);
+    Optional<RefreshToken> findByUser(UserEntity user);
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
     List<RefreshToken> findByExpiresDateBefore(Instant timestamp);
 }

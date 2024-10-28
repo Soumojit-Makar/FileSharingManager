@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+<<<<<<< HEAD
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
@@ -26,11 +27,19 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final WebAuthenticationDetailsSource detailsSource = new WebAuthenticationDetailsSource();
 
+=======
+@Component
+public class JWTAuthenticationFilter extends OncePerRequestFilter {
+    private final Logger logger= LoggerFactory.getLogger(JWTAuthenticationFilter.class);
+    private final JWTHelper jwtHelper;
+    private final UserDetailsService userDetailsService;
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
     public JWTAuthenticationFilter(final JWTHelper jwtHelper, final UserDetailsService userDetailsService) {
         this.jwtHelper = jwtHelper;
         this.userDetailsService = userDetailsService;
     }
 
+<<<<<<< HEAD
     /**
      * Processes the incoming request, extracts the JWT token from the Authorization header,
      * and performs authentication if the token is valid.
@@ -41,6 +50,15 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         String requestHeader = request.getHeader("Authorization");
         logger.debug("Request Header: {}", requestHeader);
+=======
+     //Processes the incoming request, extracts the JWT token from the Authorization header,
+     // and performs authentication if the token is valid.
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String requestHeader = request.getHeader("Authorization");
+        logger.info("Request Header: {}", requestHeader);
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
         String username = null;
         String token = null;
 
@@ -53,14 +71,21 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 logger.error("Unable to get JWT Token: {}", e.getMessage());
             } catch (ExpiredJwtException e) {
                 logger.error("JWT Token has expired: {}", e.getMessage());
+<<<<<<< HEAD
                 // Optionally notify the user about token expiration
+=======
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
             } catch (MalformedJwtException e) {
                 logger.error("JWT Token is malformed: {}", e.getMessage());
             } catch (Exception e) {
                 logger.error("JWT Token processing error: {}", e.getMessage());
             }
         } else {
+<<<<<<< HEAD
             logger.warn("Invalid Authorization Header: {}", requestHeader);
+=======
+            logger.info("Invalid Authorization Header: {}", requestHeader);
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
         }
 
         // Authenticate the user if the token is valid
@@ -69,10 +94,18 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             // Validate token
             if (username.equals(userDetails.getUsername()) && !jwtHelper.isTokenExpired(token)) {
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+<<<<<<< HEAD
                 auth.setDetails(detailsSource.buildDetails(request));
+=======
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
         filterChain.doFilter(request, response);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
     }
 }

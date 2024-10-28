@@ -51,6 +51,7 @@ public class AuthenticationController {
         this.refreshTokenService = refreshTokenService;
     }
 
+<<<<<<< HEAD
     /**
      * Authenticates a user and generates a JWT token.
      *
@@ -77,6 +78,19 @@ public class AuthenticationController {
         RefreshTokenDTO refreshTokenDTO = refreshTokenService.createRefreshToken(user.getEmail());
 
         // Return response with JWT token, refresh token, and mapped user details
+=======
+//     * Authenticates a user and generates a JWT token.
+//
+//     * This endpoint takes a JWTRequest object containing the user's email and password,
+//     * authenticates the user, and generates a JWT token along with a refresh token.
+    @PostMapping("/generate-token")
+    public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest jwtRequest) {
+        this.doAuthenticate(jwtRequest.getUsername(), jwtRequest.getPassword());
+        UserEntity user = (UserEntity) this.userDetailsService.loadUserByUsername(jwtRequest.getUsername());
+        String token = jwtHelper.generateToken(user);
+        RefreshTokenDTO refreshTokenDTO = refreshTokenService.createRefreshToken(user.getEmail());
+        // Return response with JWT and refresh token
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
         return ResponseEntity.ok(
                 JwtResponse
                         .builder()
@@ -86,6 +100,7 @@ public class AuthenticationController {
                         .build());
     }
 
+<<<<<<< HEAD
     /**
      * Regenerates a JWT token using a valid refresh token.
      *
@@ -114,11 +129,24 @@ public class AuthenticationController {
         // Return response with new JWT token, verified refresh token, and user details
         return ResponseEntity.ok(JwtResponse.builder()
                 .JwtToken(jwtToken)
+=======
+    //Regenerates a JWT token using a valid refresh token.
+    // This endpoint accepts a RefreshTokenRequest containing a refresh token,
+    // verifies the token, and generates a new JWT token for the user.
+    @PostMapping("/regenerate-token")
+    public ResponseEntity<JwtResponse> regenerateToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        RefreshTokenDTO refreshTokenDTO = refreshTokenService.findByToken(refreshTokenRequest.getRefreshToken());
+        RefreshTokenDTO refreshTokenDTO1 = refreshTokenService.verifyRefreshToken(refreshTokenDTO);
+        UserDTo userDTo = refreshTokenService.getUserByToken(refreshTokenDTO1);
+        String jwtToken = jwtHelper.generateToken(modelMapper.map(userDTo, UserEntity.class));
+        return ResponseEntity.ok(JwtResponse.builder().JwtToken(jwtToken)
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
                 .user(userDTo)
                 .refreshToken(refreshTokenDTO)
                 .build());
     }
 
+<<<<<<< HEAD
     /**
      * Helper method to perform user authentication.
      *
@@ -136,6 +164,14 @@ public class AuthenticationController {
             // Log and throw an exception if credentials are invalid
             logger.error("Invalid credentials for user: {}", email);
             throw new BadCredentialsException("User not found with the given username or password");
+=======
+    // Helper method to perform authentication
+    private void doAuthenticate(String email, String password) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (BadCredentialsException e) {
+            throw new BadCredentialsException("User not found of given username or password");
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
         }
     }
 }

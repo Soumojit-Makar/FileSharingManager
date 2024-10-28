@@ -1,5 +1,6 @@
 package com.file_sharing.app.exceptions;
 
+<<<<<<< HEAD
 /**
  * Custom exception to indicate that a requested resource was not found.
  */
@@ -39,4 +40,13 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(Throwable cause) {
         super(cause);
     }
+=======
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException() {
+        super("Resource Not Found");
+    }
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
 }

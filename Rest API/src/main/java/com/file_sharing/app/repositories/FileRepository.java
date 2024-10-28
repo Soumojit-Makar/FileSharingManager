@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface FileRepository extends JpaRepository<FileEntity, String> {
+<<<<<<< HEAD
 
     /**
      * Finds all files uploaded by a specific user, paginated.
@@ -37,5 +38,9 @@ public interface FileRepository extends JpaRepository<FileEntity, String> {
      * @param instant the time to compare expiry dates against
      * @return a list of files that have expired
      */
+=======
+    Page<FileEntity> findAllByUploadBy(UserEntity user, Pageable pageable);
+    Page<FileEntity> findByFileNameContaining(String fileName, Pageable pageable);
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
     List<FileEntity> findAllByExpiryDateBefore(Instant instant);
 }

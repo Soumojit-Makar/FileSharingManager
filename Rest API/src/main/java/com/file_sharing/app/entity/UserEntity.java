@@ -12,14 +12,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 /**
  * Entity representing a user in the system, implementing Spring Security's UserDetails interface.
  */
+=======
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+<<<<<<< HEAD
 public class UserEntity implements UserDetails {
     /** Unique identifier for the user. */
     @Id
@@ -103,5 +107,57 @@ public class UserEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.enabled; // Returns if the account is enabled.
+=======
+public class UserEntity implements UserDetails{
+    @Id
+    private String userId;
+    @Getter(AccessLevel.NONE)
+    private String password;
+    private String name;
+    @Column(unique = true,nullable = false)
+    private String email;
+    private String phone;
+    private String address;
+    private String gender;
+    @Column(length = 1000)
+    private String profilePic;
+    @Column(length = 1000)
+    private String about;
+    private boolean enabled=true;
+    private Providers providers;
+    @OneToMany(mappedBy = "uploadBy",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<FileEntity> file;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<Role> roles=new ArrayList<>();
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList());
+    }
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
     }
 }

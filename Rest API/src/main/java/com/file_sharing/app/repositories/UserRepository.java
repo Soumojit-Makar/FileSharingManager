@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
+<<<<<<< HEAD
 
     /**
      * Finds a user entity by its email.
@@ -38,4 +39,10 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
      * Note: For security reasons, consider handling password verification differently.
      */
     Optional<UserEntity> findByEmailAndPassword(String email, String password);
+=======
+    Optional<UserEntity> findByEmail(String email);
+    Page<UserEntity>  findByNameContaining(String keyword, Pageable pageable);
+    Optional<UserEntity> findByEmailAndPassword(String email,String password);
+
+>>>>>>> 756502deffa4e5fbc6afc939bcdb026fc3b8f241
 }
