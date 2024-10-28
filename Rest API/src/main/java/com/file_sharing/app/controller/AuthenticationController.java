@@ -67,6 +67,20 @@ public class AuthenticationController {
                         .user(modelMapper.map(user, UserDTo.class))
                         .build());
     }
+    //Regenerates a JWT token using a valid refresh token.
+    // This endpoint accepts a RefreshTokenRequest containing a refresh token,
+    // verifies the token, and generates a new JWT token for the user.
+    @PostMapping("/regenerate-token")
+    public ResponseEntity<JWTResponse>regenerateToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        RefreshTokenDTO refreshTokenDTO=refreshTokenService.findByToken(refreshTokenRequest.getRefreshToken());
+        RefreshTokenDTO refreshTokenDTO1=refreshTokenService.verifyRefreshToken(refreshTokenDTO);
+        UserDTo userDTo= refreshTokenService.getUserByToken(refreshTokenDTO1);
+        String jwtToken= jwtHelper.generateToken(modelMapper.map(userDTo,UserEntity.class));
+        return ResponseEntity.ok(JWTResponse.builder().jwtToken(jwtToken)
+                .user(userDTo)
+                .refreshToken(refreshTokenDTO)
+                .build());
+    }
     // Helper method to perform authentication
     private void doAuthenticate(String email, String password) {
         try {
