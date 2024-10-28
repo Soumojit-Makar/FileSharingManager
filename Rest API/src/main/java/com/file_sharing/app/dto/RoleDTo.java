@@ -1,6 +1,5 @@
 package com.file_sharing.app.dto;
 
-import com.file_sharing.app.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class RoleDTo {
-    private String roleId;
-    private String roleName;
-//    private List<UserEntity> users;
+
+    private String roleId;            // Unique identifier for the role
+    private String roleName;          // Name of the role (e.g., "Admin", "User")
+    private List<UserDTo> users;      // List of users associated with this role
 }

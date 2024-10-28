@@ -17,23 +17,30 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
-    private final Logger logger= LoggerFactory.getLogger(JWTAuthenticationFilter.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
     private final JWTHelper jwtHelper;
     private final UserDetailsService userDetailsService;
+    private final WebAuthenticationDetailsSource detailsSource = new WebAuthenticationDetailsSource();
+
     public JWTAuthenticationFilter(final JWTHelper jwtHelper, final UserDetailsService userDetailsService) {
         this.jwtHelper = jwtHelper;
         this.userDetailsService = userDetailsService;
     }
 
-     //Processes the incoming request, extracts the JWT token from the Authorization header,
-     // and performs authentication if the token is valid.
-
+    /**
+     * Processes the incoming request, extracts the JWT token from the Authorization header,
+     * and performs authentication if the token is valid.
+     */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) 
+            throws ServletException, IOException {
+
         String requestHeader = request.getHeader("Authorization");
-        logger.info("Request Header: {}", requestHeader);
+        logger.debug("Request Header: {}", requestHeader);
         String username = null;
         String token = null;
 
@@ -46,13 +53,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 logger.error("Unable to get JWT Token: {}", e.getMessage());
             } catch (ExpiredJwtException e) {
                 logger.error("JWT Token has expired: {}", e.getMessage());
+                // Optionally notify the user about token expiration
             } catch (MalformedJwtException e) {
                 logger.error("JWT Token is malformed: {}", e.getMessage());
             } catch (Exception e) {
                 logger.error("JWT Token processing error: {}", e.getMessage());
             }
         } else {
-            logger.info("Invalid Authorization Header: {}", requestHeader);
+            logger.warn("Invalid Authorization Header: {}", requestHeader);
         }
 
         // Authenticate the user if the token is valid
@@ -61,11 +69,10 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             // Validate token
             if (username.equals(userDetails.getUsername()) && !jwtHelper.isTokenExpired(token)) {
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                auth.setDetails(detailsSource.buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
         filterChain.doFilter(request, response);
-
     }
 }

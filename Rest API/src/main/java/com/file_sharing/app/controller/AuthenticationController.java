@@ -51,17 +51,32 @@ public class AuthenticationController {
         this.refreshTokenService = refreshTokenService;
     }
 
-//     * Authenticates a user and generates a JWT token.
-//
-//     * This endpoint takes a JWTRequest object containing the user's email and password,
-//     * authenticates the user, and generates a JWT token along with a refresh token.
+    /**
+     * Authenticates a user and generates a JWT token.
+     *
+     * This endpoint takes a JwtRequest object containing the user's email and
+     * password, authenticates the user, and generates a JWT token along with a
+     * refresh token.
+     *
+     * @param jwtRequest the JWTRequest containing user's login credentials
+     * @return ResponseEntity containing the JWT token, refresh token, and user
+     * details
+     */
     @PostMapping("/generate-token")
     public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest jwtRequest) {
+        // Authenticate the user using email and password
         this.doAuthenticate(jwtRequest.getUsername(), jwtRequest.getPassword());
+
+        // Load user details by username (email in this case)
         UserEntity user = (UserEntity) this.userDetailsService.loadUserByUsername(jwtRequest.getUsername());
+
+        // Generate JWT token for authenticated user
         String token = jwtHelper.generateToken(user);
+
+        // Create a new refresh token for the user
         RefreshTokenDTO refreshTokenDTO = refreshTokenService.createRefreshToken(user.getEmail());
-        // Return response with JWT and refresh token
+
+        // Return response with JWT token, refresh token, and mapped user details
         return ResponseEntity.ok(
                 JwtResponse
                         .builder()
@@ -71,27 +86,56 @@ public class AuthenticationController {
                         .build());
     }
 
-    //Regenerates a JWT token using a valid refresh token.
-    // This endpoint accepts a RefreshTokenRequest containing a refresh token,
-    // verifies the token, and generates a new JWT token for the user.
+    /**
+     * Regenerates a JWT token using a valid refresh token.
+     *
+     * This endpoint accepts a RefreshTokenRequest containing a refresh token,
+     * verifies the token, and generates a new JWT token for the user.
+     *
+     * @param refreshTokenRequest the RefreshTokenRequest containing the refresh
+     * token
+     * @return ResponseEntity containing the new JWT token, refresh token, and
+     * user details
+     */
     @PostMapping("/regenerate-token")
     public ResponseEntity<JwtResponse> regenerateToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        // Retrieve refresh token details using the provided token
         RefreshTokenDTO refreshTokenDTO = refreshTokenService.findByToken(refreshTokenRequest.getRefreshToken());
-        RefreshTokenDTO refreshTokenDTO1 = refreshTokenService.verifyRefreshToken(refreshTokenDTO);
-        UserDTo userDTo = refreshTokenService.getUserByToken(refreshTokenDTO1);
+
+        // Verify the refresh token's validity and expiration
+        RefreshTokenDTO verifiedToken = refreshTokenService.verifyRefreshToken(refreshTokenDTO);
+
+        // Retrieve user details associated with the verified token
+        UserDTo userDTo = refreshTokenService.getUserByToken(verifiedToken);
+
+        // Generate a new JWT token for the user
         String jwtToken = jwtHelper.generateToken(modelMapper.map(userDTo, UserEntity.class));
-        return ResponseEntity.ok(JwtResponse.builder().JwtToken(jwtToken)
+
+        // Return response with new JWT token, verified refresh token, and user details
+        return ResponseEntity.ok(JwtResponse.builder()
+                .JwtToken(jwtToken)
                 .user(userDTo)
                 .refreshToken(refreshTokenDTO)
                 .build());
     }
 
-    // Helper method to perform authentication
+    /**
+     * Helper method to perform user authentication.
+     *
+     * This method attempts to authenticate a user based on provided email and
+     * password. If authentication fails, it throws a BadCredentialsException.
+     *
+     * @param email the user's email
+     * @param password the user's password
+     */
     private void doAuthenticate(String email, String password) {
         try {
+            // Attempt to authenticate with given credentials
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("User not found of given username or password");
+            // Log and throw an exception if credentials are invalid
+            logger.error("Invalid credentials for user: {}", email);
+            throw new BadCredentialsException("User not found with the given username or password");
         }
     }
 }

@@ -10,8 +10,32 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
-    Optional<UserEntity> findByEmail(String email);
-    Page<UserEntity>  findByNameContaining(String keyword, Pageable pageable);
-    Optional<UserEntity> findByEmailAndPassword(String email,String password);
 
+    /**
+     * Finds a user entity by its email.
+     *
+     * @param email the email of the user to find
+     * @return an Optional containing the found UserEntity, or empty if not found
+     */
+    Optional<UserEntity> findByEmail(String email);
+
+    /**
+     * Finds users whose names contain the specified keyword.
+     *
+     * @param keyword the keyword to search for in user names
+     * @param pageable the pagination information
+     * @return a page of UserEntities containing the matching users
+     */
+    Page<UserEntity> findByNameContaining(String keyword, Pageable pageable);
+
+    /**
+     * Finds a user entity by email and password.
+     *
+     * @param email    the email of the user to find
+     * @param password the password of the user to find
+     * @return an Optional containing the found UserEntity, or empty if not found
+     * 
+     * Note: For security reasons, consider handling password verification differently.
+     */
+    Optional<UserEntity> findByEmailAndPassword(String email, String password);
 }

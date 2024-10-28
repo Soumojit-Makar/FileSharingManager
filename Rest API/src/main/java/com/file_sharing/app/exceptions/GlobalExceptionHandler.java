@@ -9,13 +9,22 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Global exception handler for handling various exceptions in the application.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    private Logger logger= LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    //Handles ResourceNotFoundException and returns a custom response.
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    /**
+     * Handles ResourceNotFoundException and returns a custom response.
+     *
+     * @param ex the ResourceNotFoundException instance.
+     * @return ResponseEntity with error message and status.
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponseMessage> resourceNotFoundException(ResourceNotFoundException ex) {
-        logger.error(ex.getMessage());
+        logger.error("Resource not found: {}", ex.getMessage());
         return new ResponseEntity<>(
                 ApiResponseMessage.builder()
                         .message(ex.getMessage())
@@ -25,10 +34,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND
         );
     }
-    //Handles FileExceptions and returns a custom response.
+
+    /**
+     * Handles FileExceptions and returns a custom response.
+     *
+     * @param ex the FileExceptions instance.
+     * @return ResponseEntity with error message and status.
+     */
     @ExceptionHandler(FileExceptions.class)
     public ResponseEntity<ApiResponseMessage> fileException(FileExceptions ex) {
-        logger.error(ex.getMessage());
+        logger.error("File exception occurred: {}", ex.getMessage());
         return new ResponseEntity<>(
                 ApiResponseMessage.builder()
                         .message(ex.getMessage())
@@ -38,16 +53,23 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    // Handles BadCredentialsException and returns a custom response
+
+    /**
+     * Handles BadCredentialsException and returns a custom response.
+     *
+     * @param exception the BadCredentialsException instance.
+     * @return ResponseEntity with error message and status.
+     */
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiResponseMessage> badCredentialsExceptionHandler(BadCredentialsException exception){
-        logger.info("Execution Handler invoked !! Exception is {}",exception.getMessage());
+    public ResponseEntity<ApiResponseMessage> badCredentialsExceptionHandler(BadCredentialsException exception) {
+        logger.warn("Bad credentials: {}", exception.getMessage());
         return new ResponseEntity<>(
                 ApiResponseMessage.builder()
-                        .httpStatus(HttpStatus.NOT_FOUND)
+                        .httpStatus(HttpStatus.UNAUTHORIZED)
                         .message(exception.getMessage())
-                        .success(true)
-                        .build(),HttpStatus.NOT_FOUND
+                        .success(false)  // Adjusted to false to reflect a failure in authentication.
+                        .build(),
+                HttpStatus.UNAUTHORIZED
         );
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 @Data
 @Builder
 public class ApiResponseMessage {
-    private String message;
-    private boolean success;
-    private HttpStatus httpStatus;
+    private String message;       // Custom message describing the result of the operation
+    private boolean success;       // Indicator of success or failure
+    private HttpStatus httpStatus; // HTTP status code for the response
 }

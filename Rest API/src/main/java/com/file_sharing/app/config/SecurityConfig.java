@@ -1,9 +1,7 @@
 package com.file_sharing.app.config;
 
-import com.file_sharing.app.helper.AppCon;
-import com.file_sharing.app.security.JWTAuthenticationEntryPoint;
-import com.file_sharing.app.security.JWTAuthenticationFilter;
-import jakarta.servlet.http.HttpSession;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,55 +16,68 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
-import java.util.List;
+import com.file_sharing.app.helper.AppCon;
+import com.file_sharing.app.security.JWTAuthenticationEntryPoint;
+import com.file_sharing.app.security.JWTAuthenticationFilter;
+
+import jakarta.servlet.http.HttpSession;
 
 @Configuration
 public class SecurityConfig {
+
     private JWTAuthenticationFilter jwtAuthenticationFilter;
     private JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
     public SecurityConfig(JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint, JWTAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, HttpSession httpSession) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable);
-        // cors Configuration
-        http.cors(httpSecurityCorsConfigurer ->
-                httpSecurityCorsConfigurer.configurationSource(request ->{
+        http.csrf(AbstractHttpConfigurer::disable); // Disables CSRF as JWT is used for stateless authentication.
+
+        // Configures CORS settings
+        http.cors(httpSecurityCorsConfigurer
+                -> httpSecurityCorsConfigurer.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOriginPatterns(List.of("*"));
-                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    config.setAllowCredentials(true);
-                    config.setAllowedHeaders(List.of("*"));
-                    config.setMaxAge(3600L);
+                    config.setAllowedOriginPatterns(List.of("*")); // Allows any origin (for development).
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed HTTP methods.
+                    config.setAllowCredentials(true); // Allows credentials to be included in requests.
+                    config.setAllowedHeaders(List.of("*")); // Allows all headers.
+                    config.setMaxAge(3600L); // Cache duration of CORS config (in seconds).
                     return config;
                 })
         );
-        // Security Configuration
-        http.authorizeHttpRequests(
-                // URL Configuration
-                authorizeRequests ->{
-                    authorizeRequests
-                            .requestMatchers(HttpMethod.POST, "/file/**").hasAnyRole(AppCon.ROLE_NORMAL, AppCon.ROLE_ADMIN)
-                            .requestMatchers(HttpMethod.PUT, "/file/**", "/user/**").hasAnyRole(AppCon.ROLE_NORMAL, AppCon.ROLE_ADMIN)
-                            .requestMatchers(HttpMethod.DELETE, "/file/**", "/user/**").hasAnyRole(AppCon.ROLE_NORMAL, AppCon.ROLE_ADMIN)
-                            .anyRequest().permitAll();
-                });
-        // for any exception
+
+        // Configures authorization rules for specific endpoints
+        http.authorizeHttpRequests(authorizeRequests -> {
+            authorizeRequests
+                    .requestMatchers(HttpMethod.POST, "/file/**").hasAnyRole(AppCon.ROLE_NORMAL, AppCon.ROLE_ADMIN)
+                    .requestMatchers(HttpMethod.PUT, "/file/**", "/user/**").hasAnyRole(AppCon.ROLE_NORMAL, AppCon.ROLE_ADMIN)
+                    .requestMatchers(HttpMethod.DELETE, "/file/**", "/user/**").hasAnyRole(AppCon.ROLE_NORMAL, AppCon.ROLE_ADMIN)
+                    .anyRequest().permitAll(); // Permits all other requests.
+        });
+
+        // Configures exception handling using a custom authentication entry point for unauthorized access
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint));
-        // Stateless Session Creation Policy set
-        http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Sets session policy to stateless, as JWT-based authentication doesn't require server-side sessions
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Adds JWT filter to process JWT tokens before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-    //Password Encoder bean
+
+    // Configures PasswordEncoder as BCryptPasswordEncoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    //Authentication Manager
+
+    // Configures AuthenticationManager to be used for authentication
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
